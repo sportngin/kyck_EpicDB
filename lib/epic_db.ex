@@ -1,0 +1,2 @@
+defmodule EpicDb do
+end
