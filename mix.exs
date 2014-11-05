@@ -12,7 +12,7 @@ defmodule EpicDb.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :amqp]]
   end
 
   # Dependencies can be Hex packages:
@@ -25,6 +25,9 @@ defmodule EpicDb.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:amqp, "0.0.6"},
+      {:jsx,  "~> 2.0"}
+    ]
   end
 end

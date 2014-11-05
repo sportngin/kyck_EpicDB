@@ -1,0 +1,4 @@
+%{"amqp": {:hex, :amqp, "0.0.6"},
+  "amqp_client": {:hex, :amqp_client, "3.4.0"},
+  "jsx": {:hex, :jsx, "2.1.1"},
+  "rabbit_common": {:hex, :rabbit_common, "3.4.0"}}
