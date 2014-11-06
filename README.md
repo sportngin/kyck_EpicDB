@@ -21,17 +21,12 @@ mix deps.get # The first time you run this it'll ask you to install hex. Say yes
 iex -S mix
 ```
 
-Now you'll be in the elixir repl (`iex`).
+Now you'll be in the elixir repl (`iex`). The `Consumer` and `Processor` `GenServer`s are setup to start automatically so everything will be running.
 
-```elixir
-# start the consumer
-EpicDb.Consumer.start_link
-```
-
-That's it for now. Once you've started the Consumer server, if you generate an event you should see a message saying:
+If you generate an event you should see a message saying:
 
 ```
-Consumed an event: <event json>
+Payload: <event json>
 ```
 
 For ease of generating an event, there is another ruby lib at https://github.com/KYCK/epic_event_generator
@@ -44,6 +39,6 @@ bundle
 bin/gen_event
 ```
 
-If the consumer server is still running, when you run `bin/gen_event` you'll see the event printed to stdout in the `iex` session.
+If `iex` is still running, when you run `bin/gen_event` you'll see the event printed to stdout in the `iex` session.
 
 To end the `iex` session hit `CTRL + C` twice.
