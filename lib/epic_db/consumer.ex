@@ -38,16 +38,7 @@ defmodule EpicDb.Consumer do
   ## Private Functions
 
   defp consume(channel, tag, redelivered, payload) do
-    {:ok, status} = EpicDb.Processor.process(payload)
-    ack({status, channel, tag})
-  end
-
-  defp ack({:success, channel, tag}) do
-    IO.puts "Acknowledging"
-    Basic.ack channel, tag
-  end
-  defp ack({:failure, channel, tag}) do
-    IO.puts "Not acknowledging"
-    Basic.nack channel, tag
+    event_message = %EpicDb.Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}
+    EpicDb.Processor.process(event_message)
   end
 end
