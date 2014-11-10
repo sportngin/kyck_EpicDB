@@ -8,8 +8,9 @@ defmodule EpicDb do
 
     children = [
       # Define workers and child supervisors to be supervised
-      worker(EpicDb.Consumer, [[name: EpicDb.Consumer]]),
-      worker(EpicDb.Processor, [[name: EpicDb.Processor]])
+      worker(EpicDb.Recorder,  [[name: EpicDb.Recorder]]),
+      worker(EpicDb.Processor, [[name: EpicDb.Processor]]),
+      worker(EpicDb.Consumer,  [[name: EpicDb.Consumer]])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
