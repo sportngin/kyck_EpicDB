@@ -9,7 +9,6 @@ defmodule EpicDb do
     children = [
       # Define workers and child supervisors to be supervised
       worker(EpicDb.Recorder,  [[name: EpicDb.Recorder]]),
-      worker(EpicDb.Processor, [[name: EpicDb.Processor]]),
       worker(EpicDb.Consumer,  [[name: EpicDb.Consumer]])
     ]
 

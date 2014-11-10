@@ -39,6 +39,6 @@ defmodule EpicDb.Consumer do
 
   defp consume(channel, tag, redelivered, payload) do
     event_message = %EpicDb.Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}
-    EpicDb.Processor.process(event_message)
+    EpicDb.Recorder.record(event_message)
   end
 end
