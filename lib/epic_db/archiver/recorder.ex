@@ -1,4 +1,4 @@
-defmodule EpicDb.Recorder do
+defmodule EpicDb.Archiver.Recorder do
   use GenServer
   alias EpicDb.Archiver.EventMessage
 
@@ -15,7 +15,7 @@ defmodule EpicDb.Recorder do
   Write `data` to the `index` with `type` to elasticsearch.
   """
   def record(event_message, index \\ "events") do
-    GenServer.cast(EpicDb.Recorder, {:record, event_message, index})
+    GenServer.cast(EpicDb.Archiver.Recorder, {:record, event_message, index})
   end
 
 

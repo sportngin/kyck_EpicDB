@@ -1,6 +1,7 @@
-defmodule EpicDb.Consumer do
+defmodule EpicDb.Archiver.Consumer do
   use GenServer
   use AMQP
+  alias EpicDb.Archiver
 
   @doc """
   Starts the consumer.
@@ -38,7 +39,7 @@ defmodule EpicDb.Consumer do
   ## Private Functions
 
   defp consume(channel, tag, redelivered, payload) do
-    event_message = %EpicDb.Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}
-    EpicDb.Recorder.record(event_message)
+    event_message = %Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}
+    Archiver.Recorder.record(event_message)
   end
 end
