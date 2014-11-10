@@ -13,8 +13,9 @@ defmodule EpicDb.Processor do
   @doc """
   Processes the payload.
   """
-  def process(server, payload) do
-    GenServer.cast(server, {:process, payload})
+  def process(payload) do
+    # GenServer.cast(EpicDb.Processor, {:process, payload})
+    GenServer.call(EpicDb.Processor, {:process, payload})
   end
 
   ## Server Callbacks
@@ -23,9 +24,22 @@ defmodule EpicDb.Processor do
     {:ok, self()}
   end
 
-  def handle_cast({:process, payload}, state) do
-    event = :jsx.decode(payload)
+  # def handle_cast({:process, payload}, _state) do
+  def handle_call({:process, payload}, _from, _state) do
+    {:ok, status} = :jsx.decode(payload)
+    |> find_target
+    |> EpicDb.Recorder.record(payload)
     IO.puts "Payload: #{payload}"
-    {:noreply, state}
+    # {:noreply, []}
+    {:reply, {:ok, status}, []}
+  end
+
+  ## Private Functions
+
+  defp find_target([{"eventTarget", target}|_]) do
+    target
+  end
+  defp find_target([_head|tail]) do
+    find_target(tail)
   end
 end

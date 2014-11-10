@@ -5,8 +5,8 @@ defmodule EpicDb.Consumer do
   @doc """
   Starts the consumer.
   """
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, [], [])
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, [], opts)
   end
 
   @exchange       "epic"
@@ -35,8 +35,19 @@ defmodule EpicDb.Consumer do
     {:noreply, chan}
   end
 
+  ## Private Functions
+
   defp consume(channel, tag, redelivered, payload) do
-    EpicDb.Processor.process(EpicDb.Processor, payload)
+    {:ok, status} = EpicDb.Processor.process(payload)
+    ack({status, channel, tag})
+  end
+
+  defp ack({:success, channel, tag}) do
+    IO.puts "Acknowledging"
     Basic.ack channel, tag
+  end
+  defp ack({:failure, channel, tag}) do
+    IO.puts "Not acknowledging"
+    Basic.nack channel, tag
   end
 end

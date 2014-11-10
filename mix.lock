@@ -1,4 +1,9 @@
 %{"amqp": {:hex, :amqp, "0.0.6"},
   "amqp_client": {:hex, :amqp_client, "3.4.0"},
+  "hackney": {:hex, :hackney, "0.14.3"},
+  "httpoison": {:hex, :httpoison, "0.5.0"},
+  "idna": {:hex, :idna, "1.0.1"},
+  "jsex": {:git, "git://github.com/talentdeficit/jsex.git", "456c1ba8bf860debeeffb4e0687e0420a1c230bc", []},
   "jsx": {:hex, :jsx, "2.1.1"},
-  "rabbit_common": {:hex, :rabbit_common, "3.4.0"}}
+  "rabbit_common": {:hex, :rabbit_common, "3.4.0"},
+  "tirexs": {:git, "https://github.com/roundscope/tirexs.git", "28d91ef1b30ca8bdf7be1dc1cebee90fbd369e9b", [tag: "v0.5.0"]}}
