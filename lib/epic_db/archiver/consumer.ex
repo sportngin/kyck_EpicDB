@@ -15,9 +15,10 @@ defmodule EpicDb.Archiver.Consumer do
   @routing_key    "#"
   # @queue_error    "#{@queue}_error"
   @prefetch_count 25
+  # @conn_string Application.get_env(:epic_db, :amqp_conn_string)
 
   def init(_opts) do
-    {:ok, conn} = Connection.open("amqp://guest:guest@localhost")
+    {:ok, conn} = Connection.open(conn_string)
     {:ok, chan} = Channel.open(conn)
     # :ok         = Confirm.select(chan)
     Basic.qos(chan, prefetch_count: @prefetch_count)
@@ -41,5 +42,9 @@ defmodule EpicDb.Archiver.Consumer do
   defp consume(channel, tag, redelivered, payload) do
     event_message = %Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}
     Archiver.Recorder.Worker.record(event_message)
+  end
+
+  defp conn_string do
+    Application.get_env(:epic_db, :amqp_conn_string)
   end
 end

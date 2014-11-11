@@ -42,6 +42,14 @@ defmodule EpicDb.Archiver.Recorder.Worker do
   ## Private Functions
 
   defp url_for(type, index) do
-    "127.0.0.1:9200/#{index}/#{type}"
+    "#{es_base_url}:#{es_port}/#{index}/#{type}"
+  end
+
+  defp es_base_url do
+    Application.get_env(:epic_db, :elasticsearch_base_url)
+  end
+
+  defp es_port do
+    Application.get_env(:epic_db, :elasticsearch_port)
   end
 end
