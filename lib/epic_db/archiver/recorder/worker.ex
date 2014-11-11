@@ -1,4 +1,4 @@
-defmodule EpicDb.Archiver.Recorder do
+defmodule EpicDb.Archiver.Recorder.Worker do
   use GenServer
   alias EpicDb.Archiver.EventMessage
 
@@ -7,15 +7,16 @@ defmodule EpicDb.Archiver.Recorder do
   @doc """
   Starts the Recorder
   """
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, [], opts)
+  def start_link(_opts) do
+    GenServer.start_link(__MODULE__, [], [])
   end
 
   @doc """
   Write `data` to the `index` with `type` to elasticsearch.
   """
   def record(event_message, index \\ "events") do
-    GenServer.cast(EpicDb.Archiver.Recorder, {:record, event_message, index})
+    :poolboy.transaction(EpicDb.Archiver.Recorder.Worker,
+      &(GenServer.call(&1, {:record, event_message, index})))
   end
 
 
@@ -25,7 +26,7 @@ defmodule EpicDb.Archiver.Recorder do
     {:ok, []}
   end
 
-  def handle_cast({:record, event_message, index}, _state) do
+  def handle_call({:record, event_message, index}, _from, _state) do
     {:ok, %HTTPoison.Response{status_code: status_code}} =
         EventMessage.target_for(event_message)
         |> url_for(index)
@@ -35,7 +36,7 @@ defmodule EpicDb.Archiver.Recorder do
     else
       EventMessage.nack(event_message)
     end
-    {:noreply, []}
+    {:reply, [], []}
   end
 
   ## Private Functions

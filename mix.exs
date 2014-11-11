@@ -31,7 +31,8 @@ defmodule EpicDb.Mixfile do
     [
       {:amqp, "0.0.6"},
       {:jsx,  "~> 2.0"},
-      {:httpoison, "~> 0.5"}
+      {:httpoison, "~> 0.5"},
+      {:poolboy, "~> 1.4.0"}
     ]
   end
 end

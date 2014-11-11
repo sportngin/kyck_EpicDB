@@ -7,7 +7,7 @@ defmodule EpicDb.Archiver.Supervisor do
 
   def init(:ok) do
     children = [
-      worker(EpicDb.Archiver.Recorder,  [[name: EpicDb.Archiver.Recorder]]),
+      worker(EpicDb.Archiver.Recorder.PoolSupervisor,  []),
       worker(EpicDb.Archiver.Consumer,  [[name: EpicDb.Archiver.Consumer]])
     ]
 
