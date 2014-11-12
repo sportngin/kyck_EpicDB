@@ -72,9 +72,4 @@ To end the `iex` session hit `CTRL + C` twice.
 
 ## TODO
 
-- [ ] Reconnect to RabbitMQ
-- [ ] Startable without RabbitMQ running
-- [ ] Allow a list of RabbitMQ servers to connect to
-- [ ] Allow a list of Elasticsearch servers to try
-- [ ] TESTS
-- [ ] Ability to route bad messages to different queue
+Write Tests!!!!!!!!!!!!!!!!
