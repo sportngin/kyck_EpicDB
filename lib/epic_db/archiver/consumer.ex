@@ -15,7 +15,6 @@ defmodule EpicDb.Archiver.Consumer do
   @routing_key    "#"
   # @queue_error    "#{@queue}_error"
   @prefetch_count 25
-  # @conn_string Application.get_env(:epic_db, :amqp_conn_string)
 
   def init(_opts) do
     {:ok, conn} = Connection.open(conn_string)

@@ -12,8 +12,8 @@ defmodule EpicDb.Archiver.Recorder.PoolSupervisor do
     pool_options = [
       name: {:local, EpicDb.Archiver.Recorder.Worker},
       worker_module: EpicDb.Archiver.Recorder.Worker,
-      size: 10,
-      max_overflow: 90
+      size: Application.get_env(:epic_db, :recorder_pool_size),
+      max_overflow: Application.get_env(:epic_db, :recorder_pool_max_overflow)
     ]
 
     children = [
