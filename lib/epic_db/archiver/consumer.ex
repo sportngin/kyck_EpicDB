@@ -14,14 +14,15 @@ defmodule EpicDb.Archiver.Consumer do
   @exchange       "epic"
   @queue          "epic_queue"
   @routing_key    "#"
-  # @queue_error    "#{@queue}_error"
+  @queue_error    "#{@queue}_error"
   @prefetch_count 25
 
   def init(_opts) do
     {:ok, chan} = connection |> Channel.open
     Basic.qos(chan, prefetch_count: @prefetch_count)
     Exchange.declare(chan, @exchange, :direct)
-    Queue.declare(chan, @queue, durable: true)
+    Queue.declare(chan, @queue_error, durable: true)
+    Queue.declare(chan, @queue, durable: true, arguments: [{"x-dead-letter-exchange", :longstr, ""}, {"x-dead-letter-routing-key", :longstr, @queue_error}])
     Queue.bind(chan, @queue, @exchange, routing_key: @routing_key)
     Basic.consume(chan, @queue)
     {:ok, chan}

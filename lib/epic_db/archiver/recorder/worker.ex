@@ -1,6 +1,7 @@
 defmodule EpicDb.Archiver.Recorder.Worker do
   use GenServer
   alias EpicDb.Archiver.EventMessage
+  require Logger
 
   ## Client API
 
@@ -33,10 +34,17 @@ defmodule EpicDb.Archiver.Recorder.Worker do
         |> HTTPoison.post(event_message.data)
     if status_code >= 200 and status_code < 300 do
       EventMessage.ack(event_message)
+      Logger.debug "ack"
     else
-      EventMessage.nack(event_message)
+      EventMessage.reject(event_message)
+      Logger.debug "reject"
     end
-    {:reply, [], []}
+    {:reply, [], event_message}
+  end
+
+  def terminate(_reason, event_message) do
+    EventMessage.reject(event_message, requeue: !event_message.redelivered)
+    :ok
   end
 
   ## Private Functions
