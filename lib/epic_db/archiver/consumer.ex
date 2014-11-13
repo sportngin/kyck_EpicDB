@@ -2,6 +2,7 @@ defmodule EpicDb.Archiver.Consumer do
   use GenServer
   use AMQP
   alias EpicDb.Archiver
+  require Logger
 
   @doc """
   Starts the consumer.
@@ -17,9 +18,7 @@ defmodule EpicDb.Archiver.Consumer do
   @prefetch_count 25
 
   def init(_opts) do
-    {:ok, conn} = Connection.open(conn_string)
-    {:ok, chan} = Channel.open(conn)
-    # :ok         = Confirm.select(chan)
+    {:ok, chan} = connection |> Channel.open
     Basic.qos(chan, prefetch_count: @prefetch_count)
     Exchange.declare(chan, @exchange, :direct)
     Queue.declare(chan, @queue, durable: true)
@@ -37,6 +36,25 @@ defmodule EpicDb.Archiver.Consumer do
   end
 
   ## Private Functions
+
+  defp connection do
+    Connection.open(conn_string) |> connection
+  end
+  defp connection({:ok, conn}) do
+    Logger.info "Connected to RabbitMQ."
+    link_to_connection(conn)
+    conn
+  end
+  defp connection({:error, :econnrefused}) do
+    :timer.sleep(1000)
+    Logger.warn "RabbitMQ is not available. Trying again in 1 sec."
+    connection
+  end
+
+  defp link_to_connection(conn) do
+    %AMQP.Connection{pid: pid} = conn
+    Process.link(pid)
+  end
 
   defp consume(channel, tag, redelivered, payload) do
     event_message = %Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}

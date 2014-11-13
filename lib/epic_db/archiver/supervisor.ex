@@ -1,8 +1,12 @@
 defmodule EpicDb.Archiver.Supervisor do
   use Supervisor
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, :ok)
+  # def start_link do
+  #   Supervisor.start_link(__MODULE__, :ok)
+  # end
+
+  def start_link(opts \\ []) do
+    Supervisor.start_link(__MODULE__, :ok, opts)
   end
 
   def init(:ok) do
