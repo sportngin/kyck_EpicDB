@@ -15,10 +15,16 @@ defmodule EpicDb.Archiver.EventMessage do
     Basic.reject message.channel, message.tag, options
   end
 
+  def requeue_once(message) do
+    reject message, requeue: !message.redelivered
+  end
+
   def target_for(message = %EpicDb.Archiver.EventMessage{}) do
     :jsx.decode(message.data)
     |> find_target
   end
+
+  ## Private Functions
 
   defp find_target([{"eventTarget", target}|_]) do
     target
