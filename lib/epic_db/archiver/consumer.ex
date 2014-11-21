@@ -39,16 +39,22 @@ defmodule EpicDb.Archiver.Consumer do
   ## Private Functions
 
   defp connection do
-    Connection.open(conn_string) |> connection
+    connection(refresh_conn_strings)
   end
-  defp connection({:ok, conn}) do
+  defp connection([conn_string|other_conn_strings]) do
+    Connection.open(conn_string) |> connection(other_conn_strings)
+  end
+  defp connection({:ok, conn}, _conn_strings) do
     Logger.info "Connected to RabbitMQ."
     link_to_connection(conn)
     conn
   end
-  defp connection({:error, :econnrefused}) do
+  defp connection({:error, :econnrefused}, conn_strings) do
     :timer.sleep(1000)
     Logger.warn "RabbitMQ is not available. Trying again in 1 sec."
+    connection(conn_strings)
+  end
+  defp connection([]) do
     connection
   end
 
@@ -62,7 +68,7 @@ defmodule EpicDb.Archiver.Consumer do
     Archiver.Recorder.Worker.record(event_message)
   end
 
-  defp conn_string do
-    Application.get_env(:epic_db, :amqp_conn_string)
+  defp refresh_conn_strings do
+    EpicDb.HostManager.hosts(:rabbitmq)
   end
 end
