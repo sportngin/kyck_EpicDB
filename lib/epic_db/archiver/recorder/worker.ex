@@ -58,7 +58,7 @@ defmodule EpicDb.Archiver.Recorder.Worker do
     if Enum.count(hosts) > 0 do
       hosts
     else
-      EpicDb.HostManager.elasticsearch
+      EpicDb.HostManager.hosts(:elasticsearch)
     end
   end
 

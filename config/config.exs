@@ -16,6 +16,7 @@ use Mix.Config
 #       metadata: [:user_id]
 
 config :epic_db,
+  host_manager_services: [:rabbitmq, :elasticsearch],
   amqp_conn_string: System.get_env("AMQP_CONN_STRING"),
   rabbitmq_hosts: System.get_env("AMQP_CONN_STRING"),
   elasticsearch_hosts: System.get_env("ES_HOSTS"),

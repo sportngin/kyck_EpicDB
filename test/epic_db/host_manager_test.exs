@@ -1,49 +1,49 @@
 defmodule EpicDb.HostManagerTest do
   use ExUnit.Case, async: true
   alias EpicDb.HostManager
+  require Logger
 
-  setup do
-    host_list = ["hello", "world", "wat"]
-    {:ok, host_list: host_list}
+  @host_list   ~w/host1 host2 host3/
+  @other_list  ~w/other1 other2 other3/
+
+  defp reset_state do
+    HostManager.remove_all_services
   end
 
-  test "should add a host" do
-    HostManager.remove_all_hosts
-    host = "home:123"
-    HostManager.add_host(host, :elasticsearch)
-    [new_host|_tail] = HostManager.hosts(:elasticsearch)
-    assert new_host == host
+  defp seed_state do
+    reset_state
+    HostManager.add_service(:external_service, @host_list)
+    HostManager.add_service(:other_service,    @other_list)
   end
 
-  test "should remove a host", %{host_list: host_list} do
-    HostManager.remove_all_hosts
-    Enum.each(host_list, &HostManager.add_host(&1, :elasticsearch))
-    ["hello", "world"] |> Enum.each(&HostManager.remove_host(&1, :elasticsearch))
-    assert HostManager.hosts(:elasticsearch) == ["wat"]
+  test "add_service/2" do
+    reset_state
+    assert HostManager.list_services |> Enum.empty?
+    HostManager.add_service :test_service
+    assert HostManager.list_services == [:test_service]
   end
 
-  test "should ignore unknown hosts when removing" do
-    HostManager.remove_all_hosts
-    HostManager.remove_host("bad host", :elasticsearch)
-    assert HostManager.hosts(:elasticsearch) == []
+  test "remove_service/1" do
+    seed_state
+    assert HostManager.list_services == [:external_service, :other_service]
+    HostManager.remove_service(:other_service)
+    assert HostManager.list_services == [:external_service]
   end
 
-  test "should get a host, hopefully at random", %{host_list: host_list} do
-    HostManager.remove_all_hosts
-    Enum.each(host_list, &HostManager.add_host(&1, :elasticsearch))
-    host = HostManager.random_host :elasticsearch
-    assert Enum.any?(host_list, &(&1 == host))
+  test "hosts/1" do
+    seed_state
+    assert HostManager.hosts(:external_service) == @host_list
   end
 
-  test "should get all hosts", %{host_list: host_list} do
-    HostManager.remove_all_hosts
-    Enum.each(host_list, &HostManager.add_host(&1, :elasticsearch))
-    assert HostManager.hosts(:elasticsearch) == Enum.reverse(host_list)
+  test "add_host/2" do
+    seed_state
+    HostManager.add_host("four", :external_service)
+    assert HostManager.hosts(:external_service) == ["four"|@host_list]
   end
 
-  test "should remove all hosts", %{host_list: host_list} do
-    Enum.each(host_list, &HostManager.add_host(&1, :elasticsearch))
-    HostManager.remove_all_hosts
-    assert HostManager.hosts(:elasticsearch) == []
+  test "remove_host/2" do
+    seed_state
+    HostManager.remove_host("host1", :external_service)
+    assert HostManager.hosts(:external_service) == ~w/host2 host3/
   end
 end

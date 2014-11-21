@@ -5,104 +5,99 @@ defmodule EpicDb.HostManager do
   ## Client API
 
   @doc """
-  Starts the server.
+  Starts the server
   """
   def start_link(opts \\ []) do
-    es_hosts = Application.get_env(:epic_db, :elasticsearch_hosts)
-    |> String.split(",", trim: true)
-    rabbit_hosts = Application.get_env(:epic_db, :rabbitmq_hosts)
-    |> String.split(",", trim: true)
-    GenServer.start_link(__MODULE__, %{elasticsearch: es_hosts, rabbitmq: rabbit_hosts}, opts)
+    GenServer.start_link(__MODULE__, [], opts)
   end
 
   @doc """
-  Returns a host at random
+  Adds `service_name` and optional `hosts`
   """
-  def random_host(service) do
-    GenServer.call(EpicDb.HostManager, {:random_host, service})
+  def add_service(service_name, hosts \\ []) do
+    GenServer.call(EpicDb.HostManager, {:add_service, service_name, hosts})
   end
 
   @doc """
-  Returns the list of hosts
+  Removes the `service_name` 
   """
-  def hosts(service) do
-    GenServer.call(EpicDb.HostManager, {:hosts, service})
+  def remove_service(service_name) do
+    GenServer.call(EpicDb.HostManager, {:remove_service, service_name})
   end
 
   @doc """
-  Syntactic Sugar returns list of elasticsearch servers
+  List all registered services
   """
-  def elasticsearch do
-    hosts(:elasticsearch)
+  def list_services do
+    GenServer.call(EpicDb.HostManager, :list_services)
   end
 
   @doc """
-  Syntactic Sugar. Returns list of rabbitmq servers
+  Removes all services and hosts
   """
-  def rabbitmq do
-    hosts(:rabbitmq)
+  def remove_all_services do
+    GenServer.cast(EpicDb.HostManager, :remove_all_services)
   end
 
   @doc """
-  Adds a host to the list of hosts
+  Returns all known hosts for `service_name`
   """
-  def add_host(host, service) do
-    GenServer.cast(EpicDb.HostManager, {:add_host, host, service})
+  def hosts(service_name) do
+    GenServer.call(EpicDb.HostManager, {:hosts, service_name})
   end
 
   @doc """
-  Removes a host from the list of hosts
+  Adds `host` to the list of hosts for `service_name`
   """
-  def remove_host(host, service) do
-    GenServer.cast(EpicDb.HostManager, {:remove_host, host, service})
+  def add_host(host, service_name) do
+    GenServer.call(EpicDb.HostManager, {:add_host, host, service_name})
   end
 
   @doc """
-  Empties list of hosts
+  Removes `host` from the list of hosts for `service_name`
   """
-  def remove_all_hosts(service) do
-    GenServer.cast(EpicDb.HostManager, {:remove_all_hosts, service})
-  end
-  def remove_all_hosts do
-    GenServer.cast(EpicDb.HostManager, {:remove_all_hosts})
+  def remove_host(host, service_name) do
+    GenServer.call(EpicDb.HostManager, {:remove_host, host, service_name})
   end
 
   ## Server Callbacks
 
-  def init(hosts) do
-    Logger.debug "Elasticsearch hosts: #{IO.inspect(hosts[:elasticsearch])}"
-    Logger.debug "RabbitMQ hosts: #{IO.inspect(hosts[:rabbitmq])}"
-    {:ok, hosts}
+  def init(_opts) do
+    services = Application.get_env(:epic_db, :host_manager_services)
+    |> Enum.reduce(HashDict.new, fn (service_key, acc) ->
+      hosts = Application.get_env(:epic_db, :"#{service_key}_hosts")
+      |> String.split(",", trim: true)
+      HashDict.put(acc, service_key, hosts)
+    end)
+
+    {:ok, services}
   end
 
-  def handle_call({:hosts, service}, _from, hosts) do
-    {:reply, hosts[service], hosts}
+  def handle_call({:add_service, name, hosts}, _from, services) do
+    new_services = HashDict.put(services, name, hosts)
+    {:reply, hosts, new_services}
   end
-  def handle_call({:random_host, service}, _from, hosts) do
-    host = Enum.shuffle(hosts[service]) |> List.first
-    {:reply, host, hosts}
+  def handle_call({:remove_service, name}, _from, services) do
+    new_services = HashDict.delete(services, name)
+    {:reply, [], new_services}
+  end
+  def handle_call(:list_services, _from, services) do
+    {:reply, HashDict.keys(services), services}
+  end
+  def handle_call({:hosts, name}, _from, services) do
+    {:ok, hosts} = HashDict.fetch(services, name)
+    {:reply, hosts, services}
+  end
+  def handle_call({:add_host, host, name}, _from, services) do
+    new_services = HashDict.update!(services, name, &([host|&1]))
+    {:reply, new_services[name], new_services}
+  end
+  def handle_call({:remove_host, host, name}, _from, services) do
+    new_services = HashDict.update!(services, name, &(List.delete(&1, host)))
+    {:reply, new_services[name], new_services}
   end
 
-  # Hack due to erlang not supporting variable keys
-  def handle_cast({:add_host, host, :elasticsearch}, hosts) do
-    { :noreply, %{hosts | elasticsearch: [host| hosts[:elasticsearch] ]} }
-  end
-  def handle_cast({:add_host, host, :rabbitmq}, hosts) do
-    { :noreply, %{hosts | rabbitmq: [host| hosts[:rabbitmq] ]} }
-  end
-  def handle_cast({:remove_host, host, :elasticsearch}, hosts) do
-    {:noreply, %{hosts | elasticsearch: List.delete(hosts[:elasticsearch], host)}}
-  end
-  def handle_cast({:remove_host, host, :rabbitmq}, hosts) do
-    {:noreply, %{hosts | rabbitmq: List.delete(hosts[:rabbitmq], host)}}
-  end
-  def handle_cast({:remove_all_hosts, :elasticsearch}, hosts) do
-    {:noreply, %{hosts | elasticsearch: []}}
-  end
-  def handle_cast({:remove_all_hosts, :rabbitmq}, hosts) do
-    {:noreply, %{hosts | rabbitmq: []}}
-  end
-  def handle_cast({:remove_all_hosts}, _hosts) do
-    {:noreply, %{elasticsearch: [], rabbitmq: []}}
+  def handle_cast(:remove_all_services, _services) do
+    {:noreply, HashDict.new}
   end
 end
