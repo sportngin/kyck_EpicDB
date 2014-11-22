@@ -15,9 +15,9 @@ defmodule EpicDb.Archiver.Recorder.Worker do
   @doc """
   Write `data` to the `index` with `type` to elasticsearch.
   """
-  def record(event_message, index \\ "events") do
+  def record(event_message) do
     :poolboy.transaction(EpicDb.Archiver.Recorder.Worker,
-      &(GenServer.call(&1, {:record, event_message, index})))
+      &(GenServer.call(&1, {:record, event_message})))
   end
 
   ## Server Callbacks
@@ -26,9 +26,8 @@ defmodule EpicDb.Archiver.Recorder.Worker do
     {:ok, refresh_hosts_list([])}
   end
 
-  def handle_call({:record, event_message, index}, _from, known_hosts) do
-    res = EventMessage.target_for(event_message)
-    |> url_for(index, known_hosts)
+  def handle_call({:record, event_message}, _from, known_hosts) do
+    res = EventMessage.url_for(event_message, known_hosts)
     |> record_event(event_message.data)
     case res do
       {:ok, 201} ->
@@ -36,10 +35,10 @@ defmodule EpicDb.Archiver.Recorder.Worker do
         Logger.debug "ack"
       {:ok, _} ->
         EventMessage.requeue_once event_message
-        Logger.debug "requeuing once"
+        Logger.debug "Requeuing once."
       _ ->
         EventMessage.reject event_message
-        Logger.debug "Something went wrong"
+        Logger.debug "Something went wrong. Message may have been saved anyway."
     end
     {:reply, [], update_hosts_based_on_response(res, known_hosts)}
   end
@@ -72,11 +71,5 @@ defmodule EpicDb.Archiver.Recorder.Worker do
       _ ->
         {:error, :unknown}
     end
-  end
-
-  defp url_for(type, index, [host|_other_hosts]) do
-    url = "#{host}/#{index}/#{type}"
-    Logger.debug "URL: #{url}"
-    url
   end
 end

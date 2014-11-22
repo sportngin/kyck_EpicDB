@@ -44,6 +44,9 @@ defmodule EpicDb.Archiver.Consumer do
   defp connection([conn_string|other_conn_strings]) do
     Connection.open(conn_string) |> connection(other_conn_strings)
   end
+  defp connection([]) do
+    connection
+  end
   defp connection({:ok, conn}, _conn_strings) do
     Logger.info "Connected to RabbitMQ."
     link_to_connection(conn)
@@ -54,9 +57,6 @@ defmodule EpicDb.Archiver.Consumer do
     Logger.warn "RabbitMQ is not available. Trying again in 1 sec."
     connection(conn_strings)
   end
-  defp connection([]) do
-    connection
-  end
 
   defp link_to_connection(conn) do
     %AMQP.Connection{pid: pid} = conn
@@ -64,7 +64,7 @@ defmodule EpicDb.Archiver.Consumer do
   end
 
   defp consume(channel, tag, redelivered, payload) do
-    event_message = %Archiver.EventMessage{channel: channel, tag: tag, redelivered: redelivered, data: payload}
+    event_message = Archiver.EventMessage.new(channel, tag, redelivered, payload)
     Archiver.Recorder.Worker.record(event_message)
   end
 
