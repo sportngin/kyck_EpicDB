@@ -1,0 +1,4 @@
+export AMQP_CONN_STRING="amqp://guest:guest@localhost"
+export ES_HOSTS="localhost:9200"
+export EPICDB_RECORDER_POOL=10
+export EPICDB_RECORDER_POOL_OVERFLOW=90

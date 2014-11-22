@@ -58,3 +58,5 @@ rel/example_project
 .concrete/DEV_MODE
 .rebar
 
+### direnv ###
+.envrc

@@ -17,7 +17,6 @@ use Mix.Config
 
 config :epic_db,
   host_manager_services: [:rabbitmq, :elasticsearch],
-  amqp_conn_string: System.get_env("AMQP_CONN_STRING"),
   rabbitmq_hosts: System.get_env("AMQP_CONN_STRING"),
   elasticsearch_hosts: System.get_env("ES_HOSTS"),
   recorder_pool_size: System.get_env("EPICDB_RECORDER_POOL") || 10,
