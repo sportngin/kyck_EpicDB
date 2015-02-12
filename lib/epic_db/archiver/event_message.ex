@@ -22,6 +22,7 @@ defmodule EpicDb.Archiver.EventMessage do
   /x
 
   def new(channel, tag, redelivered, data) do
+    ExStatsD.increment("epic_db.events.message_recieved")
     %{"eventTarget" => target, "eventTimestamp" => timestamp} = :jsxn.decode(data)
     %EpicDb.Archiver.EventMessage{
       channel:     channel,
@@ -34,14 +35,17 @@ defmodule EpicDb.Archiver.EventMessage do
   end
 
   def ack(message = %EpicDb.Archiver.EventMessage{}) do
+    ExStatsD.increment("epic_db.events.message_acked")
     Basic.ack message.channel, message.tag
   end
 
   def nack(message = %EpicDb.Archiver.EventMessage{}, options \\ []) do
+    ExStatsD.increment("epic_db.events.message_nacked")
     Basic.nack message.channel, message.tag, options
   end
 
   def reject(message = %EpicDb.Archiver.EventMessage{}, options \\ []) do
+    ExStatsD.increment("epic_db.events.message_rejected")
     Basic.reject message.channel, message.tag, options
   end
 

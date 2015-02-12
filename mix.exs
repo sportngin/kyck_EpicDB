@@ -14,7 +14,7 @@ defmodule EpicDb.Mixfile do
   def application do
     [
       mod: {EpicDb, []},
-      applications: [:logger, :amqp, :poolboy, :jsxn, :httpoison]
+      applications: [:logger, :amqp, :poolboy, :jsxn, :httpoison, :ex_statsd]
     ]
   end
 
@@ -34,7 +34,8 @@ defmodule EpicDb.Mixfile do
       {:jsxn, "0.2.1"},
       {:httpoison, "~> 0.5"},
       {:poolboy, "~> 1.4.0"},
-      {:exrm, "~> 0.14.17"}
+      {:exrm, "~> 0.14.17"},
+      {:ex_statsd, ">= 0.5.0"}
     ]
   end
 end
