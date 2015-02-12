@@ -58,7 +58,8 @@ rel/example_project
 .concrete/DEV_MODE
 .rebar
 
-### direnv ###
-.envrc
-
+### Custom ###
 Procfile
+.envrc
+*.bak
+rel/*
