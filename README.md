@@ -59,6 +59,12 @@ iex -S mix
 
 Now you'll be in the elixir repl (`iex`). The supervisors are setup to start all the servers/workers/etc. so everything will be running.
 
+### Foreman
+
+There is a `Procfile.example` provided. If you have installed foreman (or another port of foreman like forego) you can copy this to `Procfile` and then start elasticsearch and rabbitmq via `foreman start`.
+
+Then you'll just need to run `iex -S mix` to start the app.
+
 ### Demoing Locally
 
 For ease of generating an event, there is another ruby lib at https://github.com/KYCK/epic_event_generator. In yet another shell:
