@@ -15,12 +15,21 @@ use Mix.Config
 #       format: "$date $time [$level] $metadata$message\n",
 #       metadata: [:user_id]
 
+# TODO: This has changed due to the way releases work. Environment vars are resolved
+# at compile time, not runtime. This makes configuring your app via env vars difficult.
+# exrm has a github issue as part of their 1.0.0 milestone that will provide the ability
+# to supply configuration values from env vars at runtime. Once exrm gets this ability,
+# this shuold be re-evaluated and updated according to the new feature in exrm.
+#
+# You can see the github issue here:
+# https://github.com/bitwalker/exrm/issues/90
+
 config :epic_db,
-  host_manager_services: [:rabbitmq, :elasticsearch],
-  rabbitmq_hosts: System.get_env("AMQP_CONN_STRING"),
-  elasticsearch_hosts: System.get_env("ES_HOSTS"),
-  recorder_pool_size: System.get_env("EPICDB_RECORDER_POOL") || 10,
-  recorder_pool_max_overflow: System.get_env("EPICDB_RECORDER_POOL_OVERFLOW") || 90
+  host_manager_services: [:rabbitmq, :elasticsearch]
+#   rabbitmq_hosts: System.get_env("AMQP_CONN_STRING"),
+#   elasticsearch_hosts: System.get_env("ES_HOSTS"),
+#   recorder_pool_size: System.get_env("EPICDB_RECORDER_POOL") || 10,
+#   recorder_pool_max_overflow: System.get_env("EPICDB_RECORDER_POOL_OVERFLOW") || 90
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
