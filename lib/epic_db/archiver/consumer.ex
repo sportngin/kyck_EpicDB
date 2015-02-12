@@ -20,7 +20,7 @@ defmodule EpicDb.Archiver.Consumer do
   def init(_opts) do
     {:ok, chan} = connection |> Channel.open
     Basic.qos(chan, prefetch_count: @prefetch_count)
-    Exchange.declare(chan, @exchange, :direct)
+    Exchange.declare(chan, @exchange, :topic, durable: true)
     Queue.declare(chan, @queue_error, durable: true)
     Queue.declare(chan, @queue, durable: true, arguments: [{"x-dead-letter-exchange", :longstr, ""}, {"x-dead-letter-routing-key", :longstr, @queue_error}])
     Queue.bind(chan, @queue, @exchange, routing_key: @routing_key)
@@ -31,8 +31,29 @@ defmodule EpicDb.Archiver.Consumer do
   @doc """
   Spawns a new process to handle messages from rabbitmq.
   """
-  def handle_info({payload, %{delivery_tag: tag, redelivered: redelivered}}, chan) do
+  def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}}, chan) do
     spawn fn -> consume(chan, tag, redelivered, payload) end
+    {:noreply, chan}
+  end
+
+  @doc """
+  Confirmation sent by the broker after registering this process as a consumer
+  """
+  def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, chan) do
+    {:noreply, chan}
+  end
+
+  @doc """
+  Sent by the broker when the consumer is unexpectedly cancelled (such as after a queue deletion)
+  """
+  def handle_info({:basic_cancel, %{consumer_tag: consumer_tag}}, chan) do
+    {:stop, :normal, chan}
+  end
+
+  @doc """
+  Confirmation sent by the broker to the consumer process after a Basic.cancel
+  """
+  def handle_info({:basic_cancel_ok, %{consumer_tag: consumer_tag}}, chan) do
     {:noreply, chan}
   end
 

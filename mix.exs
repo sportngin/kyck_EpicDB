@@ -29,7 +29,7 @@ defmodule EpicDb.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:amqp, "0.0.6"},
+      {:amqp, "~> 0.1.0"},
       {:jsx,  "~> 2.0"},
       {:jsxn, "0.2.1"},
       {:httpoison, "~> 0.5"},
