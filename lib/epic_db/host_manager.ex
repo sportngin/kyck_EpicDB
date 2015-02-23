@@ -64,7 +64,7 @@ defmodule EpicDb.HostManager do
 
   def init(_opts) do
     services = Application.get_env(:epic_db, :host_manager_services)
-    |> Enum.reduce(HashDict.new, fn (service_key, acc) ->
+    |> Enum.reduce HashDict.new, fn (service_key, acc) ->
 
       # TODO: Once exrm provides the ability to configure a release from the environment
       # move this to the relevant location. You can see the github issue here:
@@ -73,7 +73,7 @@ defmodule EpicDb.HostManager do
       |> System.get_env
       |> String.split(",", trim: true)
       HashDict.put(acc, service_key, hosts)
-    end)
+    end
 
     {:ok, services}
   end
