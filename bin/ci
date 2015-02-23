@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+kyck_registry=docker.kyck.com
+username=brandon
+password=00Cobrar
+email=dennis@kyck.com
+epic_db_image=kyck/epic_db_tests
+mix_env=test
+rabbitmq_container=epic_db_test_rabbitmq
+elasticsearch_container=epic_db_test_elasticsearch
+rabbitmq_image=dockerfile/rabbitmq
+elasticsearch_image=${kyck_registry}/kyck/elasticsearch
+elixir_image=${kyck_registry}/kyck/elixir
+
+clean_up_containers () {
+  docker stop $rabbitmq_container $elasticsearch_container
+  docker rm $rabbitmq_container $elasticsearch_container
+}
+
+clean_up_containers
+
+set -e
+
+cd "$WORKSPACE"
+
+docker login --username $username --password $password --email $email https://${kyck_registry}
+docker pull $elasticsearch_image
+docker pull $elixir_image
+docker pull $rabbitmq_image
+
+docker build --rm --file dockerfiles/Dockerfile.${mix_env} -t ${epic_db_image} .
+
+docker run --detach --name $elasticsearch_container $elasticsearch_image
+docker run --detach --name $rabbitmq_container $rabbitmq_image
+
+elasticsearch_ip=`docker inspect --format='{{.NetworkSettings.IPAddress}}' ${elasticsearch_container}`
+rabbitmq_ip=`docker inspect --format='{{.NetworkSettings.IPAddress}}' ${rabbitmq_container}`
+
+# Start epic db container and run tests
+docker run \
+    --rm \
+    --link ${elasticsearch_container}:elasticsearch \
+    --link ${rabbitmq_container}:rabbitmq \
+    -e "ELASTICSEARCH_HOSTS=${elasticsearch_ip}:9200" \
+    -e "RABBITMQ_HOSTS=amqp://guest:guest@${rabbitmq_ip}" \
+    $epic_db_image \
+    mix test
+
+set +e
+
+clean_up_containers
+
+exit 0
