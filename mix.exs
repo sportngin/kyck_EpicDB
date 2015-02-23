@@ -34,7 +34,7 @@ defmodule EpicDb.Mixfile do
       {:jsxn, "0.2.1"},
       {:httpoison, "~> 0.5"},
       {:poolboy, "~> 1.4.0"},
-      {:exrm, "~> 0.14.17"},
+      {:exrm, "~> 0.15.0"},
       {:ex_statsd, ">= 0.5.0"}
     ]
   end
