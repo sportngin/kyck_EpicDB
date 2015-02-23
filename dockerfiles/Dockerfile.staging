@@ -1,0 +1,22 @@
+# Epic DB
+FROM docker.kyck.com/kyck/elixir
+MAINTAINER Brandon Dennis "dennis@kyck.com"
+ENV REFRESHED_AT 2015-02-21
+ENV MIX_ENV prod
+
+WORKDIR /var/apps/epic_db
+
+ADD mix.exs mix.exs
+ADD mix.lock mix.lock
+
+RUN mix deps.get && \
+    mix deps.compile
+
+ADD config config
+ADD lib lib
+
+RUN mix release
+RUN mkdir -p /releases/staging
+
+CMD ["mix", "epic_db.copy_release"]
+
