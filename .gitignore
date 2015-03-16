@@ -63,3 +63,4 @@ Procfile
 .envrc
 *.bak
 rel/*
+*.tar.gz
